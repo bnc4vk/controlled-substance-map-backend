@@ -80,6 +80,7 @@ async function resolveSubstance(rawQuery) {
   });
 
   if (!parsed.resolved_name) {
+    console.log(`❌ Resolver could not map: '${rawQuery}'. Raw model output:`, raw);
     return { success: false, message: parsed.message };
   }
 
