@@ -3,10 +3,12 @@
 import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
-import { HfInference } from "@huggingface/inference";
+import { InferenceClient } from "@huggingface/inference";
 
 import {
   HUGGING_FACE_KEY,
+  HUGGING_FACE_RESOLUTION_MODEL,
+  OPENAI_MODEL,
   OPENAI_KEY,
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
@@ -20,7 +22,7 @@ import {
   legalStatusPrompt,
 } from "./prompts.js";
 
-const hf = new HfInference(HUGGING_FACE_KEY);
+const hf = new InferenceClient(HUGGING_FACE_KEY);
 const openai = new OpenAI({ apiKey: OPENAI_KEY });
 
 const app = express();
@@ -64,7 +66,7 @@ async function supabaseRequest(path, options = {}) {
 
 async function resolveSubstance(rawQuery) {
   const response = await hf.chatCompletion({
-    model: "meta-llama/Meta-Llama-3-70B-Instruct",
+    model: HUGGING_FACE_RESOLUTION_MODEL,
     messages: [
       { role: "system", content: LLAMA3_RESOLVER_SYSTEM_PROMPT },
       { role: "user", content: llama3UserPrompt(rawQuery) },
@@ -94,7 +96,7 @@ async function resolveSubstance(rawQuery) {
 async function checkSupabaseCache(normalizedSubstance) {
   try {
     const results = await supabaseRequest(
-      `psychedelic_access?substance=eq.${encodeURIComponent(normalizedSubstance)}`
+      `controlled_substance_legal_statuses?substance=eq.${encodeURIComponent(normalizedSubstance)}`
     );
 
     if (results.length > 0) {
@@ -116,7 +118,7 @@ async function saveToSupabaseCache(rows) {
   }
 
   try {
-    await supabaseRequest("psychedelic_access", {
+    await supabaseRequest("controlled_substance_legal_statuses", {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates" },
       body: JSON.stringify(rows),
@@ -138,7 +140,7 @@ async function getSubstanceLegalStatus(normalizedSubstance) {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: OPENAI_MODEL,
       response_format: { type: "json_object" },
       messages: [
         {

@@ -1,6 +1,8 @@
 import 'dotenv/config';
 
-export const HUGGING_FACE_KEY = process.env.HUGGING_FACE_READ_KEY;
+export const HUGGING_FACE_KEY = process.env.HUGGING_FACE_API_KEY;
+export const HUGGING_FACE_RESOLUTION_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct";
+export const OPENAI_MODEL = "gpt-4.1-nano";
 export const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
 export const SUPABASE_URL = process.env.SUPABASE_URL;
